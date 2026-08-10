@@ -1,7 +1,11 @@
+#include "hardware/spi.h"
+
+
+
 class SX1262
 {
 public:
-    SX1262();
+    SX1262(spi_inst_t *spi, uint8_t cs_pin, uint8_t busy_pin, uint8_t reset_pin);
 
     // Taken from DS_SX1261-2_V1.2.pdf
     // Operational Modes Commands
@@ -56,5 +60,8 @@ public:
     static const uint8_t RESET_STATS = 0x00;
 
 private:
-
+    spi_inst_t *spi;
+    uint8_t cs_pin;
+    uint8_t busy_pin;
+    uint8_t reset_pin;
 };
