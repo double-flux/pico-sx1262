@@ -10,6 +10,8 @@ public:
     void wait_until_ready();
     // Reset the SX1262 module.
     void reset();
+    // Send a command and any associated data to the module.
+    void send(uint8_t command, const uint8_t *data, size_t length);
 
     // Taken from DS_SX1261-2_V1.2.pdf
     // Operational Modes Commands

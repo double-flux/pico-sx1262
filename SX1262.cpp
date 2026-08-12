@@ -31,3 +31,21 @@ void SX1262::reset()
     sleep_ms(50);
     this->wait_until_ready();
 }
+
+
+
+void SX1262::send(uint8_t command, const uint8_t *data, size_t length)
+{
+    this->wait_until_ready();
+    gpio_put(this->cs_pin, 0);
+
+    spi_write_blocking(this->spi, &command, 1);
+
+    if (length > 0)
+    {
+        spi_write_blocking(this->spi, data, length);
+    }
+
+    gpio_put(this->cs_pin, 1);
+    this->wait_until_ready();
+}
