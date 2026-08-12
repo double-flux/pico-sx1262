@@ -10,3 +10,13 @@ SX1262::SX1262(spi_inst_t *spi, uint8_t cs_pin, uint8_t busy_pin, uint8_t reset_
     this->busy_pin = busy_pin;
     this->reset_pin = reset_pin;
 }
+
+
+
+void SX1262::wait_until_ready()
+{
+    while (gpio_get(this->busy_pin))
+    {
+        sleep_us(10);
+    }
+}
