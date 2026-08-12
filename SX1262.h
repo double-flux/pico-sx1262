@@ -8,6 +8,8 @@ public:
     SX1262(spi_inst_t *spi, uint8_t cs_pin, uint8_t busy_pin, uint8_t reset_pin);
     // Sleeps until the SX1262 module is ready.
     void wait_until_ready();
+    // Reset the SX1262 module.
+    void reset();
 
     // Taken from DS_SX1261-2_V1.2.pdf
     // Operational Modes Commands

@@ -20,3 +20,14 @@ void SX1262::wait_until_ready()
         sleep_us(10);
     }
 }
+
+
+
+void SX1262::reset()
+{
+    gpio_put(this->reset_pin, 0);
+    sleep_ms(50);
+    gpio_put(this->reset_pin, 1);
+    sleep_ms(50);
+    this->wait_until_ready();
+}
