@@ -6,12 +6,19 @@ class SX1262
 {
 public:
     SX1262(spi_inst_t *spi, uint8_t cs_pin, uint8_t busy_pin, uint8_t reset_pin);
+
+    void send_packet(uint8_t *packet, uint8_t packet_length);
+
+    // Lower level functions.
+    // ----------------------
     // Sleeps until the SX1262 module is ready.
     void wait_until_ready();
     // Reset the SX1262 module.
     void reset();
     // Send a command and any associated data to the module.
     void send(uint8_t command, const uint8_t *data, size_t length);
+    // Sends the TX command, transmitting data in the modules buffer.
+    void set_TX();
 
     // Taken from DS_SX1261-2_V1.2.pdf
     // Operational Modes Commands

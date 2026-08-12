@@ -49,3 +49,27 @@ void SX1262::send(uint8_t command, const uint8_t *data, size_t length)
     gpio_put(this->cs_pin, 1);
     this->wait_until_ready();
 }
+
+
+
+void SX1262::set_TX()
+{
+    uint8_t timeout[3] = {0, 0, 0};
+    this->send(SX1262::SET_TX, timeout, 3);
+}
+
+
+
+void SX1262::send_packet(uint8_t *packet, uint8_t packet_length)
+{
+    uint8_t buff[packet_length + 1];
+    // Module buffer offset.
+    buff[0] = 0x00;
+    for (int i = 0; i < packet_length; i++)
+    {
+        buff[1+i] = packet[i];
+    }
+
+    this->send(SX1262::WRITE_BUFFER, buff, packet_length + 1);
+    this->set_TX();
+}
