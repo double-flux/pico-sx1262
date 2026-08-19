@@ -20,6 +20,8 @@ public:
     // Sends the TX command, transmitting data in the modules buffer.
     void set_TX();
 
+    void set_frequency(uint32_t frequency);
+
     // Taken from DS_SX1261-2_V1.2.pdf
     // Operational Modes Commands
     static const uint8_t SET_SLEEP = 0x84;

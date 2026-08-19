@@ -73,3 +73,23 @@ void SX1262::send_packet(uint8_t *packet, uint8_t packet_length)
     this->send(SX1262::WRITE_BUFFER, buff, packet_length + 1);
     this->set_TX();
 }
+
+
+
+void SX1262::set_frequency(uint32_t frequency)
+{
+    // See the documentation for this calculation.
+    uint64_t target = frequency;
+    target *= 33554432;
+    target /= 32000000;
+    uint32_t short_target = target;
+
+    uint8_t buffer[4];
+
+    buffer[0] = short_target >> 24;
+    buffer[1] = short_target >> 16;
+    buffer[2] = short_target >> 8;
+    buffer[3] = short_target;
+
+    this->send(SX1262::SET_RF_FREQUENCY, buffer, 4);
+}
