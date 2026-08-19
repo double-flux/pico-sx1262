@@ -79,4 +79,6 @@ private:
     uint8_t cs_pin;
     uint8_t busy_pin;
     uint8_t reset_pin;
+
+    void apply_default_config();
 };

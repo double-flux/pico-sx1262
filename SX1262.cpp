@@ -9,6 +9,8 @@ SX1262::SX1262(spi_inst_t *spi, uint8_t cs_pin, uint8_t busy_pin, uint8_t reset_
     this->cs_pin = cs_pin;
     this->busy_pin = busy_pin;
     this->reset_pin = reset_pin;
+
+    this->apply_default_config();
 }
 
 
@@ -92,4 +94,87 @@ void SX1262::set_frequency(uint32_t frequency)
     buffer[3] = short_target;
 
     this->send(SX1262::SET_RF_FREQUENCY, buffer, 4);
+}
+
+
+
+// This is the recommended startup sequence from the documentation: 14.2 Circuit Configuration for Basic Tx Operation
+// I've made a few changes, based on trial and error.
+void SX1262::apply_default_config()
+{
+    this->reset();
+
+    // 1. Set to standby mode.
+    uint8_t val = 0x00;
+    this->send(SX1262::SET_STANDBY, &val, 1);
+    sleep_ms(10);
+
+    // 2. Define the protocol (01 = LoRa mode).
+    val = 0x01;
+    this->send(SX1262::SET_PACKET_TYPE, &val, 1);
+    sleep_ms(10);
+
+    // 3. Define the RF frequency.
+    this->set_frequency(915000000);
+    sleep_ms(10);
+
+    // 4. Define the Power Amplifier configuration.
+    // Table 13-21: PA Operating Modes with Optimal Settings
+    // Output Power | paDutyCycle |  hpMax  | deviceSel | paLut
+    // -------------|-------------|---------|-----------|------
+    //     22db     |    0x04     |  0x07   |   0x00    | 0x01
+    //     20db     |    0x03     |  0x05   |   0x00    | 0x01
+    //     17db     |    0x02     |  0x03   |   0x00    | 0x01
+    //     14db     |    0x02     |  0x02   |   0x00    | 0x01
+    uint8_t pa_config[4] = {0x03, 0x05, 0x00, 0x01};
+    this->send(SX1262::SET_PA_CONFIG, pa_config, 4);
+    sleep_ms(10);
+
+    // 5. Define output power and ramping time (20db, 200us ramp time).
+    uint8_t tx_params[2] = {0x14, 0x04};
+    this->send(SX1262::SET_TX_PARAMS, tx_params, 2);
+    sleep_ms(10);
+
+    // 6. Define where the data payload will be stored.
+    uint8_t buffer_base[2] = {0x00, 0x00};
+    this->send(SX1262::SET_BUFFER_BASE_ADDRESS, buffer_base, 2);
+    sleep_ms(10);
+
+    // 7. Send the payload to the data buffer
+    // This is done each time in send_packet(), so no need here.
+
+    // 8. Define the modulation parameter.
+    // Spreading factor, bandwidth, coding rate, Low Data Rate Optimization,,,,
+    // These are set to the default values that arduino LoRa uses.
+    // sf7, 125kHz, LORA_CR_4_8, off
+    uint8_t mod_params[8] = {0x07, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
+    this->send(SX1262::SET_MODULATION_PARAMS, mod_params, 8);
+    sleep_ms(10);
+
+    // 9. Define the frame format.
+    // These are set to the arduino lora defaults
+    // preamble length (2 bytes), header type, payload_length, CRC type, invert IQ, padding...
+    // 8 bytes preamble, explicit header, 128 byte payload (no effect in explicit mode), CRC off, Standard IQ
+    uint8_t params[9] =  {0x00, 0x08, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00};
+    this->send(SX1262::SET_PACKET_PARAMS, params, 9);
+    sleep_ms(10);
+
+    // 10. Configure DIO and IRQ.
+    // First two bytes are IRQ mask, next to are the DIO mask
+    // 00000010 00000011 = 0x0203
+    uint8_t irq_params[8] = {0x02, 0x03, 0x02, 0x03, 0x00, 0x00, 0x00, 0x00};
+    this->send(SX1262::SET_DIO_IRQ_PARAMS, irq_params, 8);
+    sleep_ms(10);
+
+    // 11. Define Sync Word value.
+    // // Two byte register location, then the private network sync word.
+    uint8_t sync_word[4] = {0x07, 0x40, 0x14, 0x24};
+    // // Public
+    // //uint8_t sync_word[4] = {0x07, 0x40, 0x34, 0x44};
+    this->send(SX1262::WRITE_REGISTER, sync_word, 4);
+
+    // Not in the application seqence from the documentation, but necessary to get the Waveshare LoRa hat working.
+    // First byte is the voltage (1.8), the next three are the delay.
+    uint8_t tcxo_config[4] = {0x02, 0x00, 0x32, 0x00};
+    this->send(SET_DIO3_AS_TCXO_CTRL, tcxo_config, 4);
 }
