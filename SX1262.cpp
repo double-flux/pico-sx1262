@@ -250,3 +250,52 @@ void SX1262::print_errors()
         printf(" -PA_RAMP_ERR\n");
     }
 }
+
+
+
+// TODO: I'm not sure if my implementation here is off. My SX1262 often prints 'Reserved' for the `command_status` field.
+void SX1262::print_status()
+{
+    uint8_t cmd = SX1262::GET_STATUS;
+    uint8_t status;
+
+    this->wait_until_ready();
+    gpio_put(this->cs_pin, 0);
+    spi_write_blocking(this->spi, &cmd, 1);
+    spi_read_blocking(this->spi, 0x00, &status, 1);
+    gpio_put(this->cs_pin, 1);
+    this->wait_until_ready();
+
+    uint8_t chip_mode  = (status >> 4) & 0x07;
+    uint8_t command_status = (status >> 1) & 0x07;
+
+    const char* mode_name;
+    switch (chip_mode)
+    {
+        case 0: mode_name = "Unused"; break;
+        case 1: mode_name = "Reserved"; break;
+        case 2: mode_name = "STBY_RC"; break;
+        case 3: mode_name = "STBY_XOSC"; break;
+        case 4: mode_name = "FX"; break;
+        case 5: mode_name = "RS"; break;
+        case 6: mode_name = "TX"; break;
+        default: mode_name = "Unknown";
+    }
+
+    const char* status_name;
+    switch (command_status)
+    {
+        case 0: status_name = "Reserved"; break;
+        case 1: status_name = "Reserved"; break;
+        case 2: status_name = "Data is available to host"; break;
+        case 3: status_name = "Command timeout"; break;
+        case 4: status_name = "Command processing error"; break;
+        case 5: status_name = "Failure to execute command"; break;
+        case 6: status_name = "Command TX done"; break;
+        default: status_name = "Unknown";
+    }
+
+    printf("SX1262 status: 0x%02X\n", status);
+    printf("  chip mode:  %u (%s)\n", chip_mode, mode_name);
+    printf("  command:    %u (%s)\n", command_status, status_name);
+}

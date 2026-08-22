@@ -14,6 +14,7 @@ public:
     void clear_errors();
     // Print any device errors.
     void print_errors();
+    void print_status();
 
     // Lower level functions.
     // ----------------------
