@@ -115,6 +115,8 @@ void SX1262::apply_default_config()
     this->send(SX1262::SET_PACKET_TYPE, &val, 1);
     sleep_ms(10);
 
+    this->clear_errors();
+
     // 3. Define the RF frequency.
     this->set_frequency(915000000);
     sleep_ms(10);
