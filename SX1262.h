@@ -57,7 +57,7 @@ public:
     static const uint8_t SET_DIO_IRQ_PARAMS = 0x08;
     static const uint8_t GET_IRQ_STATUS = 0x12;
     static const uint8_t CLEAR_IRQ_STATUS = 0x02;
-    static const uint8_t SET_DIO_AS_RF_SWITCH_CTRL = 0x9d;
+    static const uint8_t SET_DIO2_AS_RF_SWITCH_CTRL = 0x9d;
     static const uint8_t SET_DIO3_AS_TCXO_CTRL = 0x97;
 
     // RF, Modulation and Packet Commands
