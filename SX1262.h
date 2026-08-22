@@ -9,6 +9,12 @@ public:
 
     void send_packet(uint8_t *packet, uint8_t packet_length);
 
+    // Clear the SX1262's error buffer.
+    // This must be called at least one before calling `print_errors()` for that output to be useful.
+    void clear_errors();
+    // Print any device errors.
+    void print_errors();
+
     // Lower level functions.
     // ----------------------
     // Sleeps until the SX1262 module is ready.

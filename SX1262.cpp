@@ -1,5 +1,6 @@
 #include "SX1262.h"
 #include "pico/stdlib.h"
+#include <cstdio>
 
 
 
@@ -177,4 +178,75 @@ void SX1262::apply_default_config()
     // First byte is the voltage (1.8), the next three are the delay.
     uint8_t tcxo_config[4] = {0x02, 0x00, 0x32, 0x00};
     this->send(SET_DIO3_AS_TCXO_CTRL, tcxo_config, 4);
+}
+
+
+
+void SX1262::clear_errors()
+{
+    uint8_t buff[2] = {0x00, 0x00};
+    this->send(SX1262::CLEAR_DEVICE_ERRORS, buff, 2);
+}
+
+
+
+void SX1262::print_errors()
+{
+    uint8_t cmd[2] = {SX1262::GET_DEVICE_ERRORS, 0x00};
+    uint8_t error_buffer[2] = {0};
+
+    this->wait_until_ready();
+    gpio_put(this->cs_pin, 0);
+    spi_write_blocking(this->spi, cmd, 2);
+    spi_read_blocking(this->spi, 0x00, error_buffer, 2);
+    gpio_put(this->cs_pin, 1);
+    this->wait_until_ready();
+
+    // Convert the returned bytes to a 16 bit value.
+    uint16_t error = error_buffer[0];
+    error << 8;
+    error = error | error_buffer[1];
+
+    printf("Error value: 0x%04X\n", error);
+
+    // Check each bit.
+    if (error & (1 << 0))
+    {
+        printf(" RC64K_CALIB_ERR\n");
+    }
+
+    if (error & (1 << 1))
+    {
+        printf(" RC13M_CALIB_ERR\n");
+    }
+
+    if (error & (1 << 2))
+    {
+        printf(" PLL_CALIB_ERR\n");
+    }
+
+    if (error & (1 << 3))
+    {
+        printf(" ADC_CALIB_ERR\n");
+    }
+
+    if (error & (1 << 4))
+    {
+        printf(" IMG_CALIB_ERR\n");
+    }
+
+    if (error & (1 << 5))
+    {
+        printf(" XOSC_START_ERR\n");
+    }
+
+    if (error & (1 << 6))
+    {
+        printf(" PLL_LOCK_ERR\n");
+    }
+
+    if (error & (1 << 8))
+    {
+        printf(" -PA_RAMP_ERR\n");
+    }
 }
