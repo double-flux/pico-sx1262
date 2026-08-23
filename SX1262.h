@@ -9,6 +9,12 @@ public:
 
     void send_packet(uint8_t *packet, uint8_t packet_length);
 
+    // Reads a recieved packet into `buffer`, which must be big enough (256 bytes).
+    // Returns the size of the packet.
+    // Only one packet is processed at a time, and this function returns the *first* one processed.
+    // Any new packets that are sent to the module before this has been called will be ignored.
+    int read_packet(uint8_t *buffer);
+
     // Clear the SX1262's error buffer.
     // This must be called at least one before calling `print_errors()` for that output to be useful.
     void clear_errors();

@@ -89,6 +89,70 @@ void SX1262::send_packet(uint8_t *packet, uint8_t packet_length)
 
 
 
+int SX1262::read_packet(uint8_t *buffer)
+{
+    // Get the status and check for STDBY_RC
+    uint8_t cmd = SX1262::GET_STATUS;
+    uint8_t status;
+
+    this->wait_until_ready();
+    gpio_put(this->cs_pin, 0);
+    spi_write_blocking(this->spi, &cmd, 1);
+    spi_read_blocking(this->spi, 0x00, &status, 1);
+    gpio_put(this->cs_pin, 1);
+    this->wait_until_ready();
+
+    uint8_t chip_mode  = (status >> 4) & 0x07;
+
+    if (chip_mode != 2) // != STDBY_RC
+    {
+        // TODO: Might want to set_RX here, in case the chip is stuck in some other mode.
+        return 0;
+    }
+
+    // If we get here, the RX mode has ended, which means a packet has been processed.
+
+    // dummy byte, payload length, offset address
+    uint8_t buff[3] = {0x00, 0x00, 0x00};
+    cmd = SX1262::GET_RX_BUFFER_STATUS;
+    this->wait_until_ready();
+    gpio_put(this->cs_pin, 0);
+    spi_write_blocking(this->spi, &cmd, 1);
+    spi_read_blocking(this->spi, 0x00, buff, 3);
+    gpio_put(this->cs_pin, 1);
+    this->wait_until_ready();
+
+    uint8_t packet_length = buff[1];
+    uint8_t offset = buff[2];
+
+    if (packet_length == 0)
+    {
+        return 0;
+    }
+
+    // Now we can read the buffer.
+    cmd = SX1262::READ_BUFFER;
+    this->wait_until_ready();
+    gpio_put(this->cs_pin, 0);
+    spi_write_blocking(this->spi, &cmd, 1);
+    spi_write_blocking(this->spi, &offset, 1);
+
+    // Clear the dummy/status byte.
+    spi_write_blocking(this->spi, &cmd, 1);
+
+    // Read the actual data.
+    spi_read_blocking(this->spi, 0x00, buffer, packet_length);
+    gpio_put(this->cs_pin, 1);
+    this->wait_until_ready();
+
+    // Listen for another packet.
+    this->set_RX();
+
+    return packet_length;
+}
+
+
+
 void SX1262::set_frequency(uint32_t frequency)
 {
     // See the documentation for this calculation.
