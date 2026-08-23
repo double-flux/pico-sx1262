@@ -26,6 +26,8 @@ public:
     void send(uint8_t command, const uint8_t *data, size_t length);
     // Sends the TX command, transmitting data in the modules buffer.
     void set_TX();
+    // Set to RX mode, waiting for a packet.
+    void set_RX();
 
     void set_frequency(uint32_t frequency);
 
@@ -35,7 +37,7 @@ public:
     static const uint8_t SET_STANDBY = 0x80;
     static const uint8_t SET_FS = 0xc1;
     static const uint8_t SET_TX = 0x83;
-    static const uint8_t STET_RX = 0x82;
+    static const uint8_t SET_RX = 0x82;
     static const uint8_t STOP_TIMER_ON_PREAMBLE = 0x9f;
     static const uint8_t SER_RX_DUTY_CYCLE = 0x94;
     static const uint8_t SET_CAD = 0xc5;

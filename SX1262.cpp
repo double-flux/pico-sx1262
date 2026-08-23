@@ -63,6 +63,16 @@ void SX1262::set_TX()
 
 
 
+void SX1262::set_RX()
+{
+    // Singe RX mode.
+    // Must be called again for each future packet.
+    uint8_t timeout[3] = {0, 0, 0};
+    this->send(SX1262::SET_RX, timeout, 3);
+}
+
+
+
 void SX1262::send_packet(uint8_t *packet, uint8_t packet_length)
 {
     uint8_t buff[packet_length + 1];
