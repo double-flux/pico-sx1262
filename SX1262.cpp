@@ -94,20 +94,9 @@ void SX1262::send_packet(uint8_t *packet, uint8_t packet_length)
 
 int SX1262::read_packet(uint8_t *buffer)
 {
-    // Get the status and check for STDBY_RC
-    uint8_t cmd = SX1262::GET_STATUS;
-    uint8_t status;
+    this->get_status();
 
-    this->wait_until_ready();
-    gpio_put(this->cs_pin, 0);
-    spi_write_blocking(this->spi, &cmd, 1);
-    spi_read_blocking(this->spi, 0x00, &status, 1);
-    gpio_put(this->cs_pin, 1);
-    this->wait_until_ready();
-
-    uint8_t chip_mode  = (status >> 4) & 0x07;
-
-    if (chip_mode != 2) // != STDBY_RC
+    if (this->chip_mode != SX1262::STBY_RC)
     {
         // TODO: Might want to set_RX here, in case the chip is stuck in some other mode.
         return 0;
@@ -117,7 +106,7 @@ int SX1262::read_packet(uint8_t *buffer)
 
     // dummy byte, payload length, offset address
     uint8_t buff[3] = {0x00, 0x00, 0x00};
-    cmd = SX1262::GET_RX_BUFFER_STATUS;
+    uint8_t cmd = SX1262::GET_RX_BUFFER_STATUS;
     this->wait_until_ready();
     gpio_put(this->cs_pin, 0);
     spi_write_blocking(this->spi, &cmd, 1);
@@ -332,8 +321,7 @@ void SX1262::print_errors()
 
 
 
-// TODO: I'm not sure if my implementation here is off. My SX1262 often prints 'Reserved' for the `command_status` field.
-void SX1262::print_status()
+uint8_t SX1262::get_status()
 {
     uint8_t cmd = SX1262::GET_STATUS;
     uint8_t status;
@@ -345,11 +333,21 @@ void SX1262::print_status()
     gpio_put(this->cs_pin, 1);
     this->wait_until_ready();
 
-    uint8_t chip_mode  = (status >> 4) & 0x07;
-    uint8_t command_status = (status >> 1) & 0x07;
+    this->chip_mode  = (status >> 4) & 0x07;
+    this->command_status = (status >> 1) & 0x07;
+
+    return status;
+}
+
+
+
+// TODO: I'm not sure if my implementation here is off. My SX1262 often prints 'Reserved' for the `command_status` field.
+void SX1262::print_status()
+{
+    uint8_t status = this->get_status();
 
     const char* mode_name;
-    switch (chip_mode)
+    switch (this->chip_mode)
     {
         case 0: mode_name = "Unused"; break;
         case 1: mode_name = "Reserved"; break;
@@ -362,7 +360,7 @@ void SX1262::print_status()
     }
 
     const char* status_name;
-    switch (command_status)
+    switch (this->command_status)
     {
         case 0: status_name = "Reserved"; break;
         case 1: status_name = "Reserved"; break;
@@ -375,6 +373,6 @@ void SX1262::print_status()
     }
 
     printf("SX1262 status: 0x%02X\n", status);
-    printf("  chip mode:  %u (%s)\n", chip_mode, mode_name);
-    printf("  command:    %u (%s)\n", command_status, status_name);
+    printf("  chip mode:  %u (%s)\n", this->chip_mode, mode_name);
+    printf("  command:    %u (%s)\n", this->command_status, status_name);
 }

@@ -21,6 +21,8 @@ public:
     // Print any device errors.
     void print_errors();
     void print_status();
+    // Get the status byte. Also sets `chip_mode`, and `command_status` member variables internally.
+    uint8_t get_status();
 
     // Lower level functions.
     // ----------------------
@@ -89,11 +91,23 @@ public:
     static const uint8_t GET_STATS = 0x10;
     static const uint8_t RESET_STATS = 0x00;
 
+
+    // Chip mode definitions
+    static const uint8_t STBY_RC = 0x02;
+    static const uint8_t STBY_XOSC = 0x03;
+    static const uint8_t FS = 0xc1;
+    static const uint8_t RX = 0x83;
+    static const uint8_t TX = 0x82;
+
 private:
     spi_inst_t *spi;
     uint8_t cs_pin;
     uint8_t busy_pin;
     uint8_t reset_pin;
+
+    // Status cache.
+    uint8_t chip_mode;
+    uint8_t command_status;
 
     void apply_default_config();
 };
