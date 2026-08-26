@@ -12,6 +12,7 @@ SX1262::SX1262(spi_inst_t *spi, uint8_t cs_pin, uint8_t busy_pin, uint8_t reset_
     this->reset_pin = reset_pin;
 
     this->apply_default_config();
+    this->set_RX();
 }
 
 
@@ -85,6 +86,8 @@ void SX1262::send_packet(uint8_t *packet, uint8_t packet_length)
 
     this->send(SX1262::WRITE_BUFFER, buff, packet_length + 1);
     this->set_TX();
+
+    this->set_RX();
 }
 
 
