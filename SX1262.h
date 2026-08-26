@@ -1,4 +1,5 @@
 #include "hardware/spi.h"
+#include <string>
 
 
 
@@ -6,6 +7,11 @@ class SX1262
 {
 public:
     SX1262(spi_inst_t *spi, uint8_t cs_pin, uint8_t busy_pin, uint8_t reset_pin);
+
+    // Chip specific constructors.
+    // Valid options are:
+    // 'Pico-LoRa-SX1262'
+    SX1262(const std::string &chip_name);
 
     void send_packet(uint8_t *packet, uint8_t packet_length);
 

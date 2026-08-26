@@ -17,6 +17,35 @@ SX1262::SX1262(spi_inst_t *spi, uint8_t cs_pin, uint8_t busy_pin, uint8_t reset_
 
 
 
+SX1262::SX1262(const std::string &chip_name)
+{
+    if (chip_name == "Pico-LoRa-SX1262")
+    {
+        spi_init(spi1, 1e6);
+        gpio_set_function(10, GPIO_FUNC_SPI);
+        gpio_set_function(11, GPIO_FUNC_SPI);
+        gpio_set_function(12, GPIO_FUNC_SPI);
+        spi_set_format(spi1, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+        this->spi = spi1;
+
+        gpio_init(3);
+        gpio_set_dir(3, GPIO_OUT);
+        gpio_put(3, 1);
+        gpio_init(2);
+        gpio_set_dir(2, GPIO_IN);
+        gpio_init(15);
+        gpio_set_dir(15, GPIO_OUT);
+        this->cs_pin = 3;
+        this->busy_pin = 2;
+        this->reset_pin = 15;
+
+        this->apply_default_config();
+    }
+    this->set_RX();
+}
+
+
+
 void SX1262::wait_until_ready()
 {
     while (gpio_get(this->busy_pin))
