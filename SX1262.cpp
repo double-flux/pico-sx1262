@@ -39,6 +39,12 @@ SX1262::SX1262(const std::string &chip_name)
         this->busy_pin = 2;
         this->reset_pin = 15;
 
+
+        // DIO1
+        // Used to detect TX_DONE
+        gpio_init(20);
+        gpio_set_dir(20, GPIO_IN);
+
         this->apply_default_config();
     }
     this->set_RX();
@@ -120,6 +126,15 @@ void SX1262::send_packet(uint8_t *packet, uint8_t packet_length)
     this->send(SX1262::WRITE_BUFFER, buff, packet_length + 1);
     this->set_TX();
 
+    int counter = 0;
+    while (!gpio_get(20) && counter < 2000)
+    {
+        sleep_ms(1);
+        counter ++;
+    }
+
+    uint8_t status[2] = {0x00, 0x01};
+    this->send(SX1262::CLEAR_IRQ_STATUS, status, 2);
     this->set_RX();
 }
 
