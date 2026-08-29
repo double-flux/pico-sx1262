@@ -113,6 +113,10 @@ void SX1262::send_packet(uint8_t *packet, uint8_t packet_length)
         buff[1+i] = packet[i];
     }
 
+    // Params are the same as default, only thing changed here is the size.
+    uint8_t params[9] =  {0x00, 0x08, 0x00, packet_length, 0x00, 0x00, 0x00, 0x00, 0x00};
+    this->send(SX1262::SET_PACKET_PARAMS, params, 9);
+
     this->send(SX1262::WRITE_BUFFER, buff, packet_length + 1);
     this->set_TX();
 
