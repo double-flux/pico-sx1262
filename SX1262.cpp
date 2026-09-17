@@ -213,6 +213,77 @@ void SX1262::set_frequency(uint32_t frequency)
 
 
 
+void SX1262::set_transmission_power(int8_t db)
+{
+    this->set_to_standby();
+
+    if (db > 22)
+    {
+        db = 22;
+    }
+
+    if (db < -9)
+    {
+        db = -9;
+    }
+
+
+    // Default to 20db, 200us ramp time.
+    uint8_t tx_params[2] = {0x14, 0x04};
+
+    // Table 13-21: PA Operating Modes with Optimal Settings
+    // Output Power | paDutyCycle |  hpMax  | deviceSel | paLut
+    // -------------|-------------|---------|-----------|------
+    //     22db     |    0x04     |  0x07   |   0x00    | 0x01
+    //     20db     |    0x03     |  0x05   |   0x00    | 0x01
+    //     17db     |    0x02     |  0x03   |   0x00    | 0x01
+    //     14db     |    0x02     |  0x02   |   0x00    | 0x01
+    uint8_t pa_config[4] = {0x03, 0x05, 0x00, 0x01};
+
+    if (db > 20)
+    {
+        tx_params[0] = db;
+        pa_config[0] = 0x4;
+        pa_config[1] = 0x7;
+    }
+
+    else if (db > 17)
+    {
+        tx_params[0] = db;
+        pa_config[0] = 0x3;
+        pa_config[1] = 0x5;
+    }
+
+    else if (db > 14)
+    {
+        tx_params[0] = db;
+        pa_config[0] = 0x2;
+        pa_config[1] = 0x3;
+    }
+
+    else if (db >= 0)
+    {
+        tx_params[0] = db;
+        pa_config[0] = 0x2;
+        pa_config[1] = 0x2;
+    }
+
+    else
+    {
+        tx_params[0] = 0xff + db + 1;
+        pa_config[0] = 0x2;
+        pa_config[1] = 0x2;
+    }
+
+    this->send(SX1262::SET_PA_CONFIG, pa_config, 4);
+    sleep_ms(10);
+
+    this->send(SX1262::SET_TX_PARAMS, tx_params, 2);
+    sleep_ms(10);
+}
+
+
+
 void SX1262::set_to_standby()
 {
     uint8_t val = 0x00;
@@ -242,21 +313,8 @@ void SX1262::apply_default_config()
     sleep_ms(10);
 
     // 4. Define the Power Amplifier configuration.
-    // Table 13-21: PA Operating Modes with Optimal Settings
-    // Output Power | paDutyCycle |  hpMax  | deviceSel | paLut
-    // -------------|-------------|---------|-----------|------
-    //     22db     |    0x04     |  0x07   |   0x00    | 0x01
-    //     20db     |    0x03     |  0x05   |   0x00    | 0x01
-    //     17db     |    0x02     |  0x03   |   0x00    | 0x01
-    //     14db     |    0x02     |  0x02   |   0x00    | 0x01
-    uint8_t pa_config[4] = {0x03, 0x05, 0x00, 0x01};
-    this->send(SX1262::SET_PA_CONFIG, pa_config, 4);
-    sleep_ms(10);
-
-    // 5. Define output power and ramping time (20db, 200us ramp time).
-    uint8_t tx_params[2] = {0x14, 0x04};
-    this->send(SX1262::SET_TX_PARAMS, tx_params, 2);
-    sleep_ms(10);
+    // 5. Define output power and ramping time
+    this->set_transmission_power(20);
 
     // 6. Define where the data payload will be stored.
     uint8_t buffer_base[2] = {0x00, 0x00};

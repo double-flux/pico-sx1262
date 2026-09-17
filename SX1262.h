@@ -45,6 +45,9 @@ public:
 
     void set_frequency(uint32_t frequency);
 
+    // Sets the power level in decibels from -9...22
+    void set_transmission_power(int8_t db);
+
     // Taken from DS_SX1261-2_V1.2.pdf
     // Operational Modes Commands
     static const uint8_t SET_SLEEP = 0x84;
