@@ -116,4 +116,6 @@ private:
     uint8_t command_status;
 
     void apply_default_config();
+
+    void set_to_standby();
 };

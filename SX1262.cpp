@@ -213,16 +213,22 @@ void SX1262::set_frequency(uint32_t frequency)
 
 
 
+void SX1262::set_to_standby()
+{
+    uint8_t val = 0x00;
+    this->send(SX1262::SET_STANDBY, &val, 1);
+    this->wait_until_ready();
+}
+
+
+
 // This is the recommended startup sequence from the documentation: 14.2 Circuit Configuration for Basic Tx Operation
 // I've made a few changes, based on trial and error.
 void SX1262::apply_default_config()
 {
     this->reset();
 
-    // 1. Set to standby mode.
-    uint8_t val = 0x00;
-    this->send(SX1262::SET_STANDBY, &val, 1);
-    sleep_ms(10);
+    this->set_to_standby();
 
     // 2. Define the protocol (01 = LoRa mode).
     val = 0x01;
