@@ -302,7 +302,7 @@ void SX1262::apply_default_config()
     this->set_to_standby();
 
     // 2. Define the protocol (01 = LoRa mode).
-    val = 0x01;
+    uint8_t val = 0x01;
     this->send(SX1262::SET_PACKET_TYPE, &val, 1);
     sleep_ms(10);
 
