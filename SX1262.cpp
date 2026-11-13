@@ -343,7 +343,10 @@ void SX1262::apply_default_config()
     // 10. Configure DIO and IRQ.
     // First two bytes are IRQ mask, next to are the DIO mask
     // 00000010 00000011 = 0x0203
-    uint8_t irq_params[8] = {0x02, 0x03, 0x02, 0x03, 0x00, 0x00, 0x00, 0x00};
+    // Update, we poll reads, but only need to know when transmission are done in real time.
+    // So, only set the TX bit here
+    // 00000000 00000001 = 0x0001
+    uint8_t irq_params[8] = {0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00};
     this->send(SX1262::SET_DIO_IRQ_PARAMS, irq_params, 8);
     sleep_ms(10);
 
