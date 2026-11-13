@@ -469,7 +469,7 @@ void SX1262::print_status()
         case 2: mode_name = "STBY_RC"; break;
         case 3: mode_name = "STBY_XOSC"; break;
         case 4: mode_name = "FX"; break;
-        case 5: mode_name = "RS"; break;
+        case 5: mode_name = "RX"; break;
         case 6: mode_name = "TX"; break;
         default: mode_name = "Unknown";
     }
