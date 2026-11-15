@@ -113,6 +113,7 @@ private:
     uint8_t cs_pin;
     uint8_t busy_pin;
     uint8_t reset_pin;
+    uint8_t irq_pin;
 
     // Status cache.
     uint8_t chip_mode;
