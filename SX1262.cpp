@@ -12,6 +12,8 @@ SX1262::SX1262(spi_inst_t *spi, uint8_t cs_pin, uint8_t busy_pin, uint8_t reset_
     this->reset_pin = reset_pin;
 
     this->apply_default_config();
+
+    sleep_ms(100);
     this->set_RX();
 }
 
@@ -48,6 +50,7 @@ SX1262::SX1262(const std::string &chip_name)
 
         this->apply_default_config();
     }
+    sleep_ms(100);
     this->set_RX();
 }
 
